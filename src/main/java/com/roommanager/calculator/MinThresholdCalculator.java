@@ -52,7 +52,7 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
   private Optional<RoomsAvailabilityDto> getPremiumAvailability(PremiumRoomsInfo premiumRoomsInfo,
       EconomyRoomsInfo economyRoomsInfo) {
     Collection<Customer> customers = new ArrayList<>(premiumRoomsInfo.customers());
-    customers.addAll(economyRoomsInfo.customers().subList(0, economyRoomsInfo.premumCandidates()));
+    customers.addAll(economyRoomsInfo.customers().subList(0, economyRoomsInfo.premiumCandidates()));
     if (customers.isEmpty()) {
       return Optional.empty();
     }
@@ -64,7 +64,7 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
 
   private Optional<RoomsAvailabilityDto> getEconomyAvailability(EconomyRoomsInfo economyRoomsInfo) {
     List<Customer> customers = economyRoomsInfo.customers();
-    List<Customer> reducedCustomers = customers.subList(economyRoomsInfo.premumCandidates(), customers.size());
+    List<Customer> reducedCustomers = customers.subList(economyRoomsInfo.premiumCandidates(), customers.size());
     if (customers.isEmpty()) {
       return Optional.empty();
     }
@@ -107,6 +107,6 @@ record PremiumRoomsInfo(List<Customer> customers, int remainingRooms) {
 
 }
 
-record EconomyRoomsInfo(List<Customer> customers, int premumCandidates) {
+record EconomyRoomsInfo(List<Customer> customers, int premiumCandidates) {
 
 }
