@@ -1,4 +1,4 @@
-package com.roommanager.domain;
+package com.roommanager.model;
 
 import java.math.BigDecimal;
 
