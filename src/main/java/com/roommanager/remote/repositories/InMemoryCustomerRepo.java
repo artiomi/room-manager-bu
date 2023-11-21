@@ -1,4 +1,4 @@
-package com.roommanager.remote.repository;
+package com.roommanager.remote.repositories;
 
 import com.roommanager.model.Customer;
 import jakarta.annotation.PostConstruct;
