@@ -1,4 +1,4 @@
-package com.roommanager.services;
+package com.roommanager.domain.services;
 
 import static com.roommanager.domain.model.Currency.EUR;
 import static com.roommanager.domain.model.RoomType.ECONOMY;
@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.roommanager.domain.calculator.AvailabilityCalculator;
-import com.roommanager.domain.model.RoomsAvailabilityDto;
-import com.roommanager.domain.services.RoomsAvailabilitySvc;
+import com.roommanager.domain.model.RoomsAvailabilityQuery;
+import com.roommanager.domain.model.RoomsAvailabilityResult;
 import com.roommanager.remote.api.RoomsAvailabilityRequest;
 import com.roommanager.remote.api.RoomsAvailabilityResponse;
 import java.util.List;
@@ -42,28 +42,30 @@ class RoomsAvailabilitySvcTest {
     void returnEmptyListForWhenNoAvailableRooms() {
       var response = roomsAvailabilitySvc.calculateAvailability(new RoomsAvailabilityRequest(0, 0));
       assertThat(response).isEmpty();
-      verify(availabilityCalculator, never()).execute(any(RoomsAvailabilityRequest.class));
+      verify(availabilityCalculator, never()).execute(any(RoomsAvailabilityQuery.class));
     }
 
     @Test
     void returnListOfRequestsWhenNoAvailableRooms() {
       RoomsAvailabilityRequest request = new RoomsAvailabilityRequest(5, 12);
-      RoomsAvailabilityDto premiumDto = new RoomsAvailabilityDto(PREMIUM, 3, 12.34, EUR);
-      RoomsAvailabilityDto economyDto = new RoomsAvailabilityDto(ECONOMY, 8, 172.65, EUR);
+      RoomsAvailabilityQuery query = new RoomsAvailabilityQuery(5, 12);
 
-      when(availabilityCalculator.execute(request)).thenReturn(List.of(premiumDto, economyDto));
+      RoomsAvailabilityResult premiumResult = new RoomsAvailabilityResult(PREMIUM, 3, 12.34, EUR);
+      RoomsAvailabilityResult economyResult = new RoomsAvailabilityResult(ECONOMY, 8, 172.65, EUR);
+
+      when(availabilityCalculator.execute(query)).thenReturn(List.of(premiumResult, economyResult));
       var response = roomsAvailabilitySvc.calculateAvailability(request);
       assertThat(response).size().isEqualTo(2);
-      assertThat(response).anyMatch(matchResponse(premiumDto));
-      assertThat(response).anyMatch(matchResponse(economyDto));
+      assertThat(response).anyMatch(matchResponse(premiumResult));
+      assertThat(response).anyMatch(matchResponse(economyResult));
 
     }
 
-    private Predicate<RoomsAvailabilityResponse> matchResponse(RoomsAvailabilityDto dto) {
-      return response -> response.roomType().equals(dto.roomType().toString()) &&
-                         response.currency().equals(dto.currency().toString()) &&
-                         response.customersCount() == dto.customersCount() &&
-                         response.totalPrice() == dto.totalPrice();
+    private Predicate<RoomsAvailabilityResponse> matchResponse(RoomsAvailabilityResult result) {
+      return response -> response.roomType().equals(result.roomType().toString()) &&
+                         response.currency().equals(result.currency().toString()) &&
+                         response.customersCount() == result.customersCount() &&
+                         response.totalPrice() == result.totalPrice();
     }
   }
 }

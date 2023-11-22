@@ -1,6 +1,7 @@
 package com.roommanager.domain.services;
 
 import com.roommanager.domain.calculator.AvailabilityCalculator;
+import com.roommanager.domain.model.RoomsAvailabilityQuery;
 import com.roommanager.remote.api.RoomsAvailabilityRequest;
 import com.roommanager.remote.api.RoomsAvailabilityResponse;
 import java.util.List;
@@ -22,7 +23,8 @@ public class RoomsAvailabilitySvc {
     if (request.availableEconomyRooms() < 1 && request.availablePremiumRooms() < 1) {
       return List.of();
     }
-    var response = availabilityCalculator.execute(request).stream()
+    var query = new RoomsAvailabilityQuery(request.availablePremiumRooms(),        request.availableEconomyRooms());
+    var response = availabilityCalculator.execute(query).stream()
         .map(RoomsAvailabilityResponse::from)
         .toList();
     log.info("Rooms availability response: {}", response);

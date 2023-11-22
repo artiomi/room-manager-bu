@@ -11,8 +11,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.roommanager.domain.model.Customer;
-import com.roommanager.domain.model.RoomsAvailabilityDto;
-import com.roommanager.remote.api.RoomsAvailabilityRequest;
+import com.roommanager.domain.model.RoomsAvailabilityQuery;
+import com.roommanager.domain.model.RoomsAvailabilityResult;
 import com.roommanager.remote.repositories.CustomerRepo;
 import java.math.BigDecimal;
 import java.util.List;
@@ -54,7 +54,7 @@ class MinThresholdCalculatorTest {
 
     @Test
     void returnEmptyArrayWhenNoPremiumAndEconomyRoomsAvailable() {
-      var response = minThresholdCalculator.execute(new RoomsAvailabilityRequest(0, 0));
+      var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(0, 0));
       assertThat(response).isEmpty();
       verify(customerRepo, never()).findByPriceOfferGTEOrderByPriceOfferDesc(any(BigDecimal.class), anyInt());
       verify(customerRepo, never()).findByPriceOfferLTOrderByPriceOfferDesc(any(BigDecimal.class), anyInt());
@@ -63,18 +63,18 @@ class MinThresholdCalculatorTest {
     @Test
     void returnArrayWithPremiumAvailabilityWhenOnlyPremiumRoomsAvailable() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(premiumCustomersStub());
-      var response = minThresholdCalculator.execute(new RoomsAvailabilityRequest(3, 0));
+      var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(3, 0));
       assertThat(response).size().isEqualTo(1);
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(PREMIUM, 3, 578.46, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(PREMIUM, 3, 578.46, EUR)));
       verify(customerRepo, never()).findByPriceOfferLTOrderByPriceOfferDesc(any(BigDecimal.class), anyInt());
     }
 
     @Test
     void returnArrayWithEconomyAvailabilityWhenOnlyEconomyRoomsAvailable() {
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(economyCustomersStub());
-      var response = minThresholdCalculator.execute(new RoomsAvailabilityRequest(0, 3));
+      var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(0, 3));
       assertThat(response).size().isEqualTo(1);
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(ECONOMY, 3, 255.57, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(ECONOMY, 3, 255.57, EUR)));
       verify(customerRepo, never()).findByPriceOfferGTEOrderByPriceOfferDesc(any(BigDecimal.class), anyInt());
     }
 
@@ -82,11 +82,11 @@ class MinThresholdCalculatorTest {
     void returnArrayWithPremiumAndEconomyAvailabilityWhenRoomsOfBothTypeAreAvailable() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(premiumCustomersStub());
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(economyCustomersStub());
-      var response = minThresholdCalculator.execute(new RoomsAvailabilityRequest(3, 3));
+      var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(3, 3));
 
       assertThat(response).size().isEqualTo(2);
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(PREMIUM, 3, 578.46, EUR)));
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(ECONOMY, 3, 255.57, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(PREMIUM, 3, 578.46, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(ECONOMY, 3, 255.57, EUR)));
     }
 
     @Test
@@ -94,11 +94,11 @@ class MinThresholdCalculatorTest {
     void returnArrayWithPremiumAndEconomyAvailabilityWhenRoomsOfBothTypeAreAvailable2() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 5)).thenReturn(premiumCustomersStub());
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 9)).thenReturn(economyCustomersStub());
-      var response = minThresholdCalculator.execute(new RoomsAvailabilityRequest(5, 7));
+      var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(5, 7));
 
       assertThat(response).size().isEqualTo(2);
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(PREMIUM, 3, 578.46, EUR)));
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(ECONOMY, 3, 255.57, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(PREMIUM, 3, 578.46, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(ECONOMY, 3, 255.57, EUR)));
     }
 
     @Test
@@ -106,11 +106,11 @@ class MinThresholdCalculatorTest {
     void returnArrayWithPremiumAndEconomyAvailabilityWhenRoomsOfBothTypeAreAvailable3() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(premiumCustomersStub());
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 7)).thenReturn(economyCustomersStub());
-      var response = minThresholdCalculator.execute(new RoomsAvailabilityRequest(3, 7));
+      var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(3, 7));
 
       assertThat(response).size().isEqualTo(2);
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(PREMIUM, 3, 578.46, EUR)));
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(ECONOMY, 3, 255.57, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(PREMIUM, 3, 578.46, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(ECONOMY, 3, 255.57, EUR)));
     }
 
     @Test
@@ -118,11 +118,11 @@ class MinThresholdCalculatorTest {
     void returnArrayWithPremiumAndEconomyAvailabilityWhenRoomsOfBothTypeAreAvailable4() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 5)).thenReturn(premiumCustomersStub());
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 4)).thenReturn(economyCustomersStub());
-      var response = minThresholdCalculator.execute(new RoomsAvailabilityRequest(5, 2));
+      var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(5, 2));
 
       assertThat(response).size().isEqualTo(2);
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(PREMIUM, 4, 701.46, EUR)));
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityDto(ECONOMY, 2, 132.57, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(PREMIUM, 4, 701.46, EUR)));
+      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(ECONOMY, 2, 132.57, EUR)));
     }
   }
 }

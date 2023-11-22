@@ -5,8 +5,8 @@ import static com.roommanager.domain.model.RoomType.ECONOMY;
 import static com.roommanager.domain.model.RoomType.PREMIUM;
 
 import com.roommanager.domain.model.Customer;
-import com.roommanager.domain.model.RoomsAvailabilityDto;
-import com.roommanager.remote.api.RoomsAvailabilityRequest;
+import com.roommanager.domain.model.RoomsAvailabilityQuery;
+import com.roommanager.domain.model.RoomsAvailabilityResult;
 import com.roommanager.remote.repositories.CustomerRepo;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,25 +31,25 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
   }
 
   @Override
-  public List<RoomsAvailabilityDto> execute(RoomsAvailabilityRequest request) {
-    PremiumRoomsInfo premiumRoomsInfo = getPremiumCustomers(request);
-    EconomyRoomsInfo economyRoomsInfo = getEconomyCustomers(request, premiumRoomsInfo.remainingRooms());
+  public List<RoomsAvailabilityResult> execute(RoomsAvailabilityQuery query) {
+    PremiumRoomsInfo premiumRoomsInfo = getPremiumCustomers(query);
+    EconomyRoomsInfo economyRoomsInfo = getEconomyCustomers(query, premiumRoomsInfo.remainingRooms());
 
     return composeResponse(premiumRoomsInfo, economyRoomsInfo);
   }
 
-  private List<RoomsAvailabilityDto> composeResponse(PremiumRoomsInfo premiumRoomsInfo,
+  private List<RoomsAvailabilityResult> composeResponse(PremiumRoomsInfo premiumRoomsInfo,
       EconomyRoomsInfo economyRoomsInfo) {
     var premiumPrices = getPremiumAvailability(premiumRoomsInfo, economyRoomsInfo);
     var economyPrices = getEconomyAvailability(economyRoomsInfo);
-    List<RoomsAvailabilityDto> response = new ArrayList<>();
+    List<RoomsAvailabilityResult> response = new ArrayList<>();
     premiumPrices.ifPresent(response::add);
     economyPrices.ifPresent(response::add);
 
     return Collections.unmodifiableList(response);
   }
 
-  private Optional<RoomsAvailabilityDto> getPremiumAvailability(PremiumRoomsInfo premiumRoomsInfo,
+  private Optional<RoomsAvailabilityResult> getPremiumAvailability(PremiumRoomsInfo premiumRoomsInfo,
       EconomyRoomsInfo economyRoomsInfo) {
     Collection<Customer> customers = new ArrayList<>(premiumRoomsInfo.customers());
     customers.addAll(economyRoomsInfo.customers().subList(0, economyRoomsInfo.premiumCandidates()));
@@ -58,11 +58,11 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
     }
     double totalPrice = calculateTotalPrice(customers);
 
-    return Optional.of(new RoomsAvailabilityDto(PREMIUM, customers.size(), totalPrice, EUR));
+    return Optional.of(new RoomsAvailabilityResult(PREMIUM, customers.size(), totalPrice, EUR));
 
   }
 
-  private Optional<RoomsAvailabilityDto> getEconomyAvailability(EconomyRoomsInfo economyRoomsInfo) {
+  private Optional<RoomsAvailabilityResult> getEconomyAvailability(EconomyRoomsInfo economyRoomsInfo) {
     List<Customer> customers = economyRoomsInfo.customers();
     List<Customer> reducedCustomers = customers.subList(economyRoomsInfo.premiumCandidates(), customers.size());
     if (customers.isEmpty()) {
@@ -70,7 +70,7 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
     }
     double totalPrice = calculateTotalPrice(reducedCustomers);
 
-    return Optional.of(new RoomsAvailabilityDto(ECONOMY, reducedCustomers.size(), totalPrice, EUR));
+    return Optional.of(new RoomsAvailabilityResult(ECONOMY, reducedCustomers.size(), totalPrice, EUR));
   }
 
 
@@ -81,24 +81,24 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
         .doubleValue();
   }
 
-  private PremiumRoomsInfo getPremiumCustomers(RoomsAvailabilityRequest request) {
+  private PremiumRoomsInfo getPremiumCustomers(RoomsAvailabilityQuery query) {
     int remainingRooms = 0;
     List<Customer> customers = new ArrayList<>();
-    if (request.availablePremiumRooms() > 0) {
+    if (query.availablePremiumRooms() > 0) {
       customers = customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(premiumPriceMinThreshold,
-          request.availablePremiumRooms());
-      remainingRooms = Math.max(0, request.availablePremiumRooms() - customers.size());
+          query.availablePremiumRooms());
+      remainingRooms = Math.max(0, query.availablePremiumRooms() - customers.size());
     }
     return new PremiumRoomsInfo(customers, remainingRooms);
   }
 
-  private EconomyRoomsInfo getEconomyCustomers(RoomsAvailabilityRequest request, int remainingPremiumRooms) {
+  private EconomyRoomsInfo getEconomyCustomers(RoomsAvailabilityQuery query, int remainingPremiumRooms) {
     int extraCustomers = 0;
     List<Customer> customers = new ArrayList<>();
-    if (request.availableEconomyRooms() > 0 || remainingPremiumRooms > 0) {
-      int limit = request.availableEconomyRooms() + remainingPremiumRooms;
+    if (query.availableEconomyRooms() > 0 || remainingPremiumRooms > 0) {
+      int limit = query.availableEconomyRooms() + remainingPremiumRooms;
       customers = customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(premiumPriceMinThreshold, limit);
-      extraCustomers = Math.max(0, customers.size() - request.availableEconomyRooms());
+      extraCustomers = Math.max(0, customers.size() - query.availableEconomyRooms());
     }
     return new EconomyRoomsInfo(customers, extraCustomers);
   }
