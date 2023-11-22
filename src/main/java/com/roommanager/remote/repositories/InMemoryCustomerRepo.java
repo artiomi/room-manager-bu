@@ -1,6 +1,7 @@
 package com.roommanager.remote.repositories;
 
 import com.roommanager.domain.model.Customer;
+import com.roommanager.remote.ClientsResourceParser;
 import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -11,13 +12,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class InMemoryCustomerRepo implements CustomerRepo {
 
-  private static final List<Double> PRICES = List.of(23D, 45D, 155D, 374D, 22D, 99.99D, 100D, 101D, 115D, 209D);
   private final Comparator<Customer> customerComparator = Comparator.comparing(Customer::priceOffer).reversed();
+  private final ClientsResourceParser clientsResourceParser;
   private List<Customer> customers = null;
+
+  public InMemoryCustomerRepo(ClientsResourceParser clientsResourceParser) {
+    this.clientsResourceParser = clientsResourceParser;
+  }
 
   @PostConstruct
   void postConstruct() {
-    customers = PRICES.stream()
+    customers = this.clientsResourceParser.getRecords().stream()
         .map(p -> new Customer(BigDecimal.valueOf(p)))
         .sorted(customerComparator)
         .toList();
