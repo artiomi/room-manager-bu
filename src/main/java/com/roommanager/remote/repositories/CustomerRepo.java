@@ -1,6 +1,6 @@
 package com.roommanager.remote.repositories;
 
-import com.roommanager.model.Customer;
+import com.roommanager.domain.model.Customer;
 import java.math.BigDecimal;
 import java.util.List;
 

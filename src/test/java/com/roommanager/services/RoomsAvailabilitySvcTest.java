@@ -1,16 +1,17 @@
 package com.roommanager.services;
 
-import static com.roommanager.model.Currency.EUR;
-import static com.roommanager.model.RoomType.ECONOMY;
-import static com.roommanager.model.RoomType.PREMIUM;
+import static com.roommanager.domain.model.Currency.EUR;
+import static com.roommanager.domain.model.RoomType.ECONOMY;
+import static com.roommanager.domain.model.RoomType.PREMIUM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.roommanager.calculator.AvailabilityCalculator;
-import com.roommanager.model.RoomsAvailabilityDto;
+import com.roommanager.domain.calculator.AvailabilityCalculator;
+import com.roommanager.domain.model.RoomsAvailabilityDto;
+import com.roommanager.domain.services.RoomsAvailabilitySvc;
 import com.roommanager.remote.api.RoomsAvailabilityRequest;
 import com.roommanager.remote.api.RoomsAvailabilityResponse;
 import java.util.List;

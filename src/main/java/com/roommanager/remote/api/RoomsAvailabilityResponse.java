@@ -1,6 +1,6 @@
 package com.roommanager.remote.api;
 
-import com.roommanager.model.RoomsAvailabilityDto;
+import com.roommanager.domain.model.RoomsAvailabilityDto;
 
 public record RoomsAvailabilityResponse(String roomType, int customersCount, double totalPrice, String currency) {
 

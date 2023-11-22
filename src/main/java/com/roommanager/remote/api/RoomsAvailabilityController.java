@@ -1,6 +1,6 @@
 package com.roommanager.remote.api;
 
-import com.roommanager.services.RoomsAvailabilitySvc;
+import com.roommanager.domain.services.RoomsAvailabilitySvc;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.util.List;
 import org.springframework.http.ResponseEntity;

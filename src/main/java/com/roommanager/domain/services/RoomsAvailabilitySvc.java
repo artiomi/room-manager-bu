@@ -1,6 +1,6 @@
-package com.roommanager.services;
+package com.roommanager.domain.services;
 
-import com.roommanager.calculator.AvailabilityCalculator;
+import com.roommanager.domain.calculator.AvailabilityCalculator;
 import com.roommanager.remote.api.RoomsAvailabilityRequest;
 import com.roommanager.remote.api.RoomsAvailabilityResponse;
 import java.util.List;

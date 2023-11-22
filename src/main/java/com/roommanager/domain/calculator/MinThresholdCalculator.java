@@ -1,11 +1,11 @@
-package com.roommanager.calculator;
+package com.roommanager.domain.calculator;
 
-import static com.roommanager.model.Currency.EUR;
-import static com.roommanager.model.RoomType.ECONOMY;
-import static com.roommanager.model.RoomType.PREMIUM;
+import static com.roommanager.domain.model.Currency.EUR;
+import static com.roommanager.domain.model.RoomType.ECONOMY;
+import static com.roommanager.domain.model.RoomType.PREMIUM;
 
-import com.roommanager.model.Customer;
-import com.roommanager.model.RoomsAvailabilityDto;
+import com.roommanager.domain.model.Customer;
+import com.roommanager.domain.model.RoomsAvailabilityDto;
 import com.roommanager.remote.api.RoomsAvailabilityRequest;
 import com.roommanager.remote.repositories.CustomerRepo;
 import java.math.BigDecimal;
@@ -85,7 +85,8 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
     int remainingRooms = 0;
     List<Customer> customers = new ArrayList<>();
     if (request.availablePremiumRooms() > 0) {
-      customers = customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(premiumPriceMinThreshold, request.availablePremiumRooms());
+      customers = customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(premiumPriceMinThreshold,
+          request.availablePremiumRooms());
       remainingRooms = Math.max(0, request.availablePremiumRooms() - customers.size());
     }
     return new PremiumRoomsInfo(customers, remainingRooms);
