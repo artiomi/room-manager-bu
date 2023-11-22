@@ -17,6 +17,7 @@ import com.roommanager.remote.api.RoomsAvailabilityResponse;
 import java.util.List;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,17 +40,18 @@ class RoomsAvailabilitySvcTest {
   class CalculateAvailabilityTest {
 
     @Test
-    void returnEmptyListForWhenNoAvailableRooms() {
+    @DisplayName("empty list is returned, when availability for both room types is zero")
+    void returnEmptyList() {
       var response = roomsAvailabilitySvc.calculateAvailability(new RoomsAvailabilityRequest(0, 0));
       assertThat(response).isEmpty();
       verify(availabilityCalculator, never()).execute(any(RoomsAvailabilityQuery.class));
     }
 
     @Test
-    void returnListOfRequestsWhenNoAvailableRooms() {
+    @DisplayName("list with availability for both rooms types is returned, when available count for both provided")
+    void returnListOfAvailableRooms() {
       RoomsAvailabilityRequest request = new RoomsAvailabilityRequest(5, 12);
       RoomsAvailabilityQuery query = new RoomsAvailabilityQuery(5, 12);
-
       RoomsAvailabilityResult premiumResult = new RoomsAvailabilityResult(PREMIUM, 3, 12.34, EUR);
       RoomsAvailabilityResult economyResult = new RoomsAvailabilityResult(ECONOMY, 8, 172.65, EUR);
 

@@ -53,7 +53,8 @@ class MinThresholdCalculatorTest {
   class ExecuteTest {
 
     @Test
-    void returnEmptyArrayWhenNoPremiumAndEconomyRoomsAvailable() {
+    @DisplayName("empty list is returned, when there are no available rooms of any type")
+    void returnEmptyList() {
       var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(0, 0));
       assertThat(response).isEmpty();
       verify(customerRepo, never()).findByPriceOfferGTEOrderByPriceOfferDesc(any(BigDecimal.class), anyInt());
@@ -61,7 +62,8 @@ class MinThresholdCalculatorTest {
     }
 
     @Test
-    void returnArrayWithPremiumAvailabilityWhenOnlyPremiumRoomsAvailable() {
+    @DisplayName("availability for premium rooms is returned if there are only premium rooms available")
+    void returnArrayWithPremiumAvailabilityOnly() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(premiumCustomersStub());
       var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(3, 0));
       assertThat(response).size().isEqualTo(1);
@@ -70,16 +72,19 @@ class MinThresholdCalculatorTest {
     }
 
     @Test
-    void returnArrayWithEconomyAvailabilityWhenOnlyEconomyRoomsAvailable() {
+    @DisplayName("availability for economy rooms is returned if there are only economy rooms available")
+    void returnArrayWithEconomyAvailabilityOnly() {
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(economyCustomersStub());
       var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(0, 3));
+
       assertThat(response).size().isEqualTo(1);
       assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(ECONOMY, 3, 255.57, EUR)));
       verify(customerRepo, never()).findByPriceOfferGTEOrderByPriceOfferDesc(any(BigDecimal.class), anyInt());
     }
 
     @Test
-    void returnArrayWithPremiumAndEconomyAvailabilityWhenRoomsOfBothTypeAreAvailable() {
+    @DisplayName("economy customers stay in economy room and premium customers in premium if there are enough free rooms of both types")
+    void economyCustomerStayInEconomyRoomAndPremiumCustomerInPremiumOne() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(premiumCustomersStub());
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(economyCustomersStub());
       var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(3, 3));
@@ -90,8 +95,8 @@ class MinThresholdCalculatorTest {
     }
 
     @Test
-    @DisplayName("no economy customer is moved to premium, even if there are premium rooms available")
-    void returnArrayWithPremiumAndEconomyAvailabilityWhenRoomsOfBothTypeAreAvailable2() {
+    @DisplayName("no economy customer is moved to premium, if there are enough economy rooms available")
+    void economyCustomerNotMovedToPremiumIfEconomyRoomsAvailable() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 5)).thenReturn(premiumCustomersStub());
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 9)).thenReturn(economyCustomersStub());
       var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(5, 7));
@@ -102,20 +107,8 @@ class MinThresholdCalculatorTest {
     }
 
     @Test
-    @DisplayName("no economy customer is moved to premium, if there are enough economy rooms available")
-    void returnArrayWithPremiumAndEconomyAvailabilityWhenRoomsOfBothTypeAreAvailable3() {
-      when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 3)).thenReturn(premiumCustomersStub());
-      when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 7)).thenReturn(economyCustomersStub());
-      var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(3, 7));
-
-      assertThat(response).size().isEqualTo(2);
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(PREMIUM, 3, 578.46, EUR)));
-      assertThat(response).anyMatch(c -> c.equals(new RoomsAvailabilityResult(ECONOMY, 3, 255.57, EUR)));
-    }
-
-    @Test
     @DisplayName("an economy customer with highest price is moved to premium, if all economy rooms are full and there is premium room available")
-    void returnArrayWithPremiumAndEconomyAvailabilityWhenRoomsOfBothTypeAreAvailable4() {
+    void economyCustomerMovedToPremium() {
       when(customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(MIN_THRESHOLD, 5)).thenReturn(premiumCustomersStub());
       when(customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(MIN_THRESHOLD, 4)).thenReturn(economyCustomersStub());
       var response = minThresholdCalculator.execute(new RoomsAvailabilityQuery(5, 2));
