@@ -24,9 +24,9 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
   private final CustomerRepo customerRepo;
 
   public MinThresholdCalculator(
-      @Value("${premium.min-threshold:100}") double premiumPriceMinThreshold,
+      @Value("${app.premium.min-threshold}") BigDecimal premiumPriceMinThreshold,
       CustomerRepo customerRepo) {
-    this.premiumPriceMinThreshold = BigDecimal.valueOf(premiumPriceMinThreshold);
+    this.premiumPriceMinThreshold = premiumPriceMinThreshold;
     this.customerRepo = customerRepo;
   }
 

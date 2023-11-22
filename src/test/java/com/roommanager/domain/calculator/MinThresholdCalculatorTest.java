@@ -46,7 +46,7 @@ class MinThresholdCalculatorTest {
 
   @BeforeEach
   void beforeEach() {
-    minThresholdCalculator = new MinThresholdCalculator(MIN_THRESHOLD.doubleValue(), customerRepo);
+    minThresholdCalculator = new MinThresholdCalculator(MIN_THRESHOLD, customerRepo);
   }
 
   @Nested
