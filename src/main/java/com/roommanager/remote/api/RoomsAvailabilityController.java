@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/rooms")
 public class RoomsAvailabilityController {
 
   private final RoomsAvailabilitySvc roomsAvailabilitySvc;
@@ -21,7 +21,7 @@ public class RoomsAvailabilityController {
     this.roomsAvailabilitySvc = roomsAvailabilitySvc;
   }
 
-  @GetMapping("/rooms-availability")
+  @GetMapping("/availability")
   public ResponseEntity<List<RoomsAvailabilityResponse>> getRoomsAvailability(
       @RequestParam(defaultValue = "0") @PositiveOrZero int availablePremiumRooms,
       @RequestParam(defaultValue = "0") @PositiveOrZero int availableEconomyRooms
