@@ -82,24 +82,25 @@ public class MinThresholdCalculator implements AvailabilityCalculator {
   }
 
   private PremiumRoomsInfo getPremiumCustomers(RoomsAvailabilityQuery query) {
-    int remainingRooms = 0;
-    List<Customer> customers = new ArrayList<>();
-    if (query.availablePremiumRooms() > 0) {
-      customers = customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(premiumPriceMinThreshold,
-          query.availablePremiumRooms());
-      remainingRooms = Math.max(0, query.availablePremiumRooms() - customers.size());
+    if (query.availablePremiumRooms() < 1) {
+      return new PremiumRoomsInfo(Collections.emptyList(), 0);
     }
+    List<Customer> customers = customerRepo.findByPriceOfferGTEOrderByPriceOfferDesc(premiumPriceMinThreshold,
+        query.availablePremiumRooms());
+
+    int remainingRooms = Math.max(0, query.availablePremiumRooms() - customers.size());
     return new PremiumRoomsInfo(customers, remainingRooms);
   }
 
   private EconomyRoomsInfo getEconomyCustomers(RoomsAvailabilityQuery query, int remainingPremiumRooms) {
-    int extraCustomers = 0;
-    List<Customer> customers = new ArrayList<>();
-    if (query.availableEconomyRooms() > 0 || remainingPremiumRooms > 0) {
-      int limit = query.availableEconomyRooms() + remainingPremiumRooms;
-      customers = customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(premiumPriceMinThreshold, limit);
-      extraCustomers = Math.max(0, customers.size() - query.availableEconomyRooms());
+    if (query.availableEconomyRooms() < 1 && remainingPremiumRooms < 1) {
+      return new EconomyRoomsInfo(Collections.emptyList(), 0);
     }
+
+    int limit = query.availableEconomyRooms() + remainingPremiumRooms;
+    List<Customer> customers = customerRepo.findByPriceOfferLTOrderByPriceOfferDesc(premiumPriceMinThreshold, limit);
+
+    int extraCustomers = Math.max(0, customers.size() - query.availableEconomyRooms());
     return new EconomyRoomsInfo(customers, extraCustomers);
   }
 }
